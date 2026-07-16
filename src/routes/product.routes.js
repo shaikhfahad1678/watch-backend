@@ -4,7 +4,6 @@ import {
     getAllBrands,
     getProductById,
     getProductsByBrand,
-    increaseClick,
     increaseView,
     searchProducts,
     getSectionProducts
@@ -17,7 +16,6 @@ router.get("/brands", getAllBrands);
 router.get("/search", searchProducts);
 router.get("/section/:title", getSectionProducts);
 router.get("/brand/:brandId", getProductsByBrand);
-router.post("/click/:id", increaseClick);
 router.post("/view/:id", increaseView);
 router.get("/:id", getProductById);
 

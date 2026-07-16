@@ -90,18 +90,19 @@ app.use((req, res, next) => {
   next();
 });
 
-//routes import
 import userRouter from './routes/user.routes.js' //we imported router as userRouter
 import productRouter from './routes/product.routes.js'
 import adminRouter from './routes/admin.routes.js'
 import blogRouter from './routes/blog.routes.js'
 import topListRouter from './routes/topList.routes.js'
+import dashboardRouter from './routes/dashboard.routes.js'
 //routes declaration
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/product",productRouter)
 app.use("/api/v1/admin", adminRouter)
 app.use("/api/v1/blog", blogRouter)
 app.use("/api/v1/top-list", topListRouter)
+app.use("/api/v1/dashboard", dashboardRouter)
 
 // Global Error Handler Middleware
 app.use((err, req, res, next) => {

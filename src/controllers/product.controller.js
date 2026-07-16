@@ -36,7 +36,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
         }
     }
 
-    let findQuery = Watch.find(query).select("-keywords").populate("brand_id");
+    let findQuery = Watch.find(query).select("-keywords");
 
     if (limit) {
         findQuery = findQuery.limit(parseInt(limit));
@@ -57,7 +57,7 @@ const getProductById = asyncHandler(async (req, res) => {
 
     const { id } = req.params;
 
-    const product = await Watch.findById(id).populate("brand_id");
+    const product = await Watch.findById(id);
 
     if (!product) {
         throw new ApiError(404, "Product not found");
@@ -86,8 +86,12 @@ const getAllBrands = asyncHandler(async (req, res) => {
 const getProductsByBrand = asyncHandler(async (req, res) => {
 
     const { brandId } = req.params;
+    const brandObj = await Brand.findById(brandId);
+    if (!brandObj) {
+        throw new ApiError(404, "Brand not found");
+    }
 
-    const products = await Watch.find({ brand_id: brandId });
+    const products = await Watch.find({ brand: brandObj.brand_name });
 
     return res.status(200).json(
         new ApiResponse(200, products, "Products fetched by brand")
@@ -109,20 +113,7 @@ const increaseView = asyncHandler(async (req, res) => {
 
 });
 
-//When user clicks Amazon / Flipkart / Myntra link.
-const increaseClick = asyncHandler(async (req, res) => {
 
-    const { id } = req.params;
-
-    await Watch.findByIdAndUpdate(id, {
-        $inc: { click: 1 }
-    });
-
-    return res.status(200).json(
-        new ApiResponse(200, {}, "Click counted")
-    );
-
-});
 
 // Helper function to calculate Levenshtein distance between two words
 function getEditDistance(a, b) {
@@ -159,11 +150,11 @@ const searchProducts = asyncHandler(async (req, res) => {
     const { q } = req.query;
 
     if (!q || !q.trim()) {
-        const products = await Watch.find().select("-keywords").populate("brand_id");
+        const products = await Watch.find().select("-keywords");
         return res.status(200).json(new ApiResponse(200, products, "Search results"));
     }
 
-    const allProducts = await Watch.find().populate("brand_id");
+    const allProducts = await Watch.find();
     const queryTokens = q.toLowerCase().split(/\s+/).filter(Boolean);
 
     const matches = allProducts.filter((product) => {
@@ -215,7 +206,6 @@ export {
     getAllBrands,
     getProductById,
     getProductsByBrand,
-    increaseClick,
     increaseView,
     searchProducts,
     getSectionProducts

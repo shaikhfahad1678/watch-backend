@@ -7,11 +7,6 @@ const productSchema = new mongoose.Schema({
     index: true,
   },
 
-  brand_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Brand"
-  },
-
   gender: {
     type: String,
     enum: ["Unisex", "Men", "Women"],
@@ -103,11 +98,6 @@ const productSchema = new mongoose.Schema({
     }
   ],
 
-  click: {
-    type: Number,
-    default: 0
-  },
-
   images: [
     {
       url: String,
@@ -128,7 +118,13 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
 
-  keywords: [String]
+  keywords: [String],
+
+  sensors: [String],
+
+  thickness_mm: {
+    type: Number
+  }
 
 }, { timestamps: { createdAt: "created_at", updatedAt: false } });
 
