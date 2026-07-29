@@ -22,6 +22,10 @@ const productSchema = new mongoose.Schema({
     type: String
   },
 
+  speciality: {
+    type: String
+  },
+
   views: {
     type: Number,
     default: 0
@@ -71,7 +75,7 @@ const productSchema = new mongoose.Schema({
   battery_life_days: {
     type: String
   },
-
+  
   bluetooth_calling: {
     type: String,
     enum: ["Yes", "No"],
@@ -98,6 +102,9 @@ const productSchema = new mongoose.Schema({
     }
   ],
 
+  videos: [String],
+  shorts: [String],
+
   images: [
     {
       url: String,
@@ -114,6 +121,11 @@ const productSchema = new mongoose.Schema({
   },
 
   rating: {
+    type: Number,
+    default: 0
+  },
+
+  num_reviews: {
     type: Number,
     default: 0
   },
