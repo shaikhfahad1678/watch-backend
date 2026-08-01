@@ -144,12 +144,12 @@ export const uploadUrlToStorage = async (imageUrl, folder = "watches") => {
 };
 
 export const deleteFromStorage = async (imageUrl) => {
-    if (!imageUrl) return;
+    if (!imageUrl || typeof imageUrl !== "string") return;
 
     // 1. If it's a local storage URL
     if (imageUrl.includes("/uploads/")) {
         try {
-            const relativePath = imageUrl.split("/uploads/")[1];
+            const relativePath = imageUrl.split("/uploads/")[1]?.split("?")[0];
             if (relativePath) {
                 const localPath = path.join("./public/uploads", relativePath);
                 if (fs.existsSync(localPath)) {
@@ -166,9 +166,28 @@ export const deleteFromStorage = async (imageUrl) => {
     // 2. Cloudflare R2
     if (s3Client && r2BucketName) {
         try {
-            const urlObj = new URL(imageUrl);
-            const key = decodeURIComponent(urlObj.pathname.replace(/^\//, ""));
-            
+            let key = "";
+            if (imageUrl.includes("watches/")) {
+                key = "watches/" + imageUrl.split("watches/")[1].split("?")[0];
+            } else if (r2PublicUrl && imageUrl.includes(r2PublicUrl)) {
+                key = imageUrl.split(r2PublicUrl)[1].replace(/^\//, "").split("?")[0];
+            } else if (r2Endpoint && imageUrl.includes(r2Endpoint)) {
+                key = imageUrl.split(r2Endpoint)[1].replace(/^\//, "").split("?")[0];
+            } else {
+                try {
+                    const urlObj = new URL(imageUrl);
+                    let pathname = urlObj.pathname.replace(/^\//, "");
+                    if (pathname.includes("/cdn-cgi/image/")) {
+                        pathname = pathname.replace(/^cdn-cgi\/image\/[^/]+\//, "");
+                    }
+                    key = decodeURIComponent(pathname.split("?")[0]);
+                } catch (e) {
+                    return;
+                }
+            }
+
+            if (!key) return;
+
             const command = new DeleteObjectCommand({
                 Bucket: r2BucketName,
                 Key: key

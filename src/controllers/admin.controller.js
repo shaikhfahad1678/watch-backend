@@ -1,7 +1,6 @@
-// controllers/productController.js
-
 import Watch from "../models/product.model.js";
 import ProductSection from "../models/product.section.js";
+import { uploadToStorage, uploadUrlToStorage, deleteFromStorage } from "../utils/upload.service.js";
 
 export const addProduct = async (req, res) => {
   try {
@@ -54,17 +53,30 @@ export const removeProduct = async (req, res) => {
       });
     }
 
-    // Delete the product document from database
-    await Watch.findByIdAndDelete(id);
+    // Collect all image URLs (supporting objects, string arrays, single image fields)
+    const imageUrls = [];
+    if (product.images && product.images.length > 0) {
+      product.images.forEach(img => {
+        const url = typeof img === "string" ? img : img?.url;
+        if (url) imageUrls.push(url);
+      });
+    }
+    if (product.image) {
+      const url = typeof product.image === "string" ? product.image : product.image?.url;
+      if (url && !imageUrls.includes(url)) imageUrls.push(url);
+    }
 
     // Delete associated images from Cloudflare R2 or local storage
-    if (product.images && product.images.length > 0) {
-      for (const img of product.images) {
-        if (img.url) {
-          await deleteFromStorage(img.url);
-        }
+    for (const url of imageUrls) {
+      try {
+        await deleteFromStorage(url);
+      } catch (err) {
+        console.error(`Failed to delete image from storage: ${url}`, err.message);
       }
     }
+
+    // Delete the product document from database
+    await Watch.findByIdAndDelete(id);
 
     res.json({
       success: true,
@@ -123,8 +135,6 @@ export const updateProduct = async (req, res) => {
     });
   }
 };
-
-import { uploadToStorage, uploadUrlToStorage, deleteFromStorage } from "../utils/upload.service.js";
 
 export const uploadImage = async (req, res) => {
   try {
