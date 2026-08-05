@@ -10,7 +10,15 @@ const productSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ["Unisex", "Men", "Women"],
-    default: "Unisex"
+    default: "Unisex",
+    set: (v) => {
+      if (!v || v === "") return "Unisex";
+      const clean = String(v).trim();
+      if (/^men$/i.test(clean) || /^male$/i.test(clean) || /^man$/i.test(clean)) return "Men";
+      if (/^women$/i.test(clean) || /^female$/i.test(clean) || /^woman$/i.test(clean)) return "Women";
+      if (/^unisex$/i.test(clean)) return "Unisex";
+      return "Unisex";
+    }
   },
 
   model_name: {
@@ -79,7 +87,12 @@ const productSchema = new mongoose.Schema({
   bluetooth_calling: {
     type: String,
     enum: ["Yes", "No"],
-    default: "No"
+    default: "No",
+    set: (v) => {
+      if (!v || v === "" || v === "N/A" || v === "None" || v === "No" || v === "false" || v === false) return "No";
+      if (v === "Yes" || v === "true" || v === true || String(v).toLowerCase().includes("yes") || String(v).toLowerCase().includes("support")) return "Yes";
+      return "No";
+    }
   },
 
   color: {
